@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSidebar } from '~/components/ui/sidebar'
+import { toast } from 'vue-sonner'
 
 defineProps<{
   user: {
@@ -10,9 +11,21 @@ defineProps<{
 }>()
 
 const { isMobile, setOpenMobile } = useSidebar()
+const { logout } = useAuth()
 
-function handleLogout() {
-  navigateTo('/login')
+async function handleLogout() {
+  try {
+    const { success, error } = await logout()
+    if (success) {
+      toast.success('Successfully logged out!')
+      navigateTo('/login')
+    } else {
+      toast.error('Failed to logout: ' + (error as Error).message)
+    }
+  } catch (error) {
+    toast.error('An error occurred during logout')
+    console.error('Logout error:', error)
+  }
 }
 
 const showModalTheme = ref(false)

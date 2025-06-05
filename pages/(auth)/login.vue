@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
   layout: 'blank',
+  ssr: true
 })
 </script>
 
