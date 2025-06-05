@@ -51,8 +51,11 @@
     "@tanstack/vue-table": "^8.21.2",
     "@unovis/ts": "^1.5.1",
     "@unovis/vue": "^1.5.1",
+    "@vueuse/firebase": "^13.3.0",
     "embla-carousel": "^8.5.2",
-    "embla-carousel-vue": "^8.5.2"
+    "embla-carousel-vue": "^8.5.2",
+    "firebase": "^11.9.0",
+    "vuefire": "^3.2.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.1",

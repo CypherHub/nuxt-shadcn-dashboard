@@ -2,6 +2,8 @@
 import { Sonner } from '@/components/ui/sonner'
 import { ConfigProvider } from 'radix-vue'
 
+console.log('🔥 App.vue: Client-side code executing')
+
 const colorMode = useColorMode()
 
 const color = computed(() => colorMode.value === 'dark' ? '#09090b' : '#ffffff')

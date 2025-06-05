@@ -6,6 +6,6 @@ export default defineAppConfig({
   sidebar: {
     collapsible: 'offcanvas', // 'offcanvas' | 'icon' | 'none'
     side: 'left', // 'left' | 'right'
-    variant: 'sidebar', // 'sidebar' | 'floating' | 'inset'
+    variant: 'floating', // 'sidebar' | 'floating' | 'inset'
   },
 })
