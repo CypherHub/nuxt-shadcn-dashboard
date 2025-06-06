@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSidebar } from '~/components/ui/sidebar'
+import { toast } from '~/components/ui/toast'
 
 defineProps<{
   user: {
@@ -10,9 +11,23 @@ defineProps<{
 }>()
 
 const { isMobile, setOpenMobile } = useSidebar()
+const { logout } = useAuth()
 
-function handleLogout() {
-  navigateTo('/login')
+async function handleLogout() {
+  try {
+    await logout()
+    toast({
+      title: "Success",
+      description: "Successfully logged out",
+    })
+    navigateTo('/login')
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: "Failed to logout. Please try again.",
+      variant: "destructive"
+    })
+  }
 }
 
 const showModalTheme = ref(false)
