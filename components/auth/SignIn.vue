@@ -5,7 +5,14 @@ import { toast } from '~/components/ui/toast'
 
 const email = ref('')
 const password = ref('')
-const { loginWithEmail, loginWithGoogle, loading, error } = useAuth()
+const { loginWithEmail, loginWithGoogle, loading, error, user } = useAuth()
+
+// Check for authentication on component mount
+onMounted(() => {
+  if (user.value) {
+    navigateTo('/')
+  }
+})
 
 async function onSubmit(event: Event) {
   event.preventDefault()
