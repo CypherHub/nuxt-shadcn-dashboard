@@ -1,5 +1,5 @@
 import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { doc, setDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc } from 'firebase/firestore'
 import type { User } from '~/models/User'
 
 export class UserController {
@@ -40,6 +40,19 @@ export class UserController {
       return user
     } catch (error) {
       console.error('Error registering user:', error)
+      throw error
+    }
+  }
+
+  async getUserData(uid: string): Promise<User | null> {
+    try {
+      const userDoc = await getDoc(doc(this.db, 'users', uid))
+      if (!userDoc.exists()) {
+        return null
+      }
+      return userDoc.data() as User
+    } catch (error) {
+      console.error('Error fetching user data:', error)
       throw error
     }
   }

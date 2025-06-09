@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { NavGroup, NavLink, NavSectionTitle } from '~/types/nav'
 import { navMenu, navMenuBottom } from '~/constants/menus'
-import type { User } from '~/models/User'
+import { useUser } from '~/composables/useUser'
+import { useAppSettings } from '~/composables/useAppSettings'
 
 function resolveNavItemComponent(item: NavLink | NavGroup | NavSectionTitle): any {
   if ('children' in item)
@@ -32,16 +33,7 @@ const teams: {
   },
 ]
 
-const user: User = {
-  id: '1', // You should get this from your auth system
-  firstName: 'Dian',
-  lastName: 'Pratama',
-  email: 'dianpratama2@gmail.com',
-  role: 'student',
-  createdAt: new Date(),
-  updatedAt: new Date()
-}
-
+const { user } = useUser()
 const { sidebar } = useAppSettings()
 </script>
 
@@ -63,7 +55,7 @@ const { sidebar } = useAppSettings()
       </SidebarGroup>
     </SidebarContent>
     <SidebarFooter>
-      <LayoutSidebarNavFooter :user="user" />
+      <LayoutSidebarNavFooter v-if="user" :user="user" />
     </SidebarFooter>
     <SidebarRail />
   </Sidebar>

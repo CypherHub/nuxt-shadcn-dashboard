@@ -1,7 +1,7 @@
 export default defineNuxtRouteMiddleware(async (to) => {
   console.log('Auth middleware running for path:', to.path)
   const { $auth } = useNuxtApp()
-  const user = useState('user')
+  const { user, fetchUserData, clearUser } = useUser()
   const isInitialized = useState('auth-initialized', () => false)
 
   // Skip auth check during SSR
@@ -17,8 +17,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!isInitialized.value) {
     console.log('Waiting for auth initialization...')
     await new Promise((resolve) => {
-      const unsubscribe = $auth.onAuthStateChanged((firebaseUser) => {
-        user.value = firebaseUser
+      const unsubscribe = $auth.onAuthStateChanged(async (firebaseUser) => {
+        if (firebaseUser) {
+          // Fetch complete user data from Firestore
+          await fetchUserData(firebaseUser.uid)
+        } else {
+          clearUser()
+        }
         isInitialized.value = true
         unsubscribe()
         resolve(true)
@@ -32,9 +37,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
   }
 
-  // If user is not authenticated, redirect to loading page
+  // If user is not authenticated, redirect to login page
   if (!user.value) {
-    console.log('User not authenticated, redirecting to loading page')
+    console.log('User not authenticated, redirecting to login page')
     return navigateTo('/login')
   }
   

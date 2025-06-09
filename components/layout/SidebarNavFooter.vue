@@ -42,7 +42,7 @@ const showModalTheme = ref(false)
             <Avatar class="h-8 w-8 rounded-lg">
               <AvatarImage :src="user.avatar || ''" :alt="user.firstName + ' ' + user.lastName" />
               <AvatarFallback class="rounded-lg">
-                {{ user.firstName[0] + user.lastName[0] }}
+                {{ user.firstName + user.lastName }}
               </AvatarFallback>
             </Avatar>
             <div class="grid flex-1 text-left text-sm leading-tight">
