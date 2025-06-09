@@ -1,57 +1,47 @@
 <script setup lang="ts">
-import NumberFlow from '@number-flow/vue'
-import { Activity, CreditCard, DollarSign, Users } from 'lucide-vue-next'
+import { Book, GraduationCap } from 'lucide-vue-next'
 
-const dataCard = ref({
-  totalRevenue: 0,
-  totalRevenueDesc: 0,
-  subscriptions: 0,
-  subscriptionsDesc: 0,
-  sales: 0,
-  salesDesc: 0,
-  activeNow: 0,
-  activeNowDesc: 0,
-})
+// Sample course data - in a real app, this would come from your backend
+const courses = ref([
+  {
+    id: '1',
+    title: 'Introduction to Web Development',
+    description: 'Learn the fundamentals of web development including HTML, CSS, and JavaScript.',
+    imageUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&h=300&fit=crop',
+    enrolled: true,
+  },
+  {
+    id: '2',
+    title: 'Advanced JavaScript',
+    description: 'Master modern JavaScript concepts including ES6+, async programming, and design patterns.',
+    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&h=300&fit=crop',
+    enrolled: false,
+  },
+  {
+    id: '3',
+    title: 'Vue.js Masterclass',
+    description: 'Build modern web applications with Vue.js, from basics to advanced concepts.',
+    imageUrl: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=500&h=300&fit=crop',
+    enrolled: true,
+  },
+  {
+    id: '4',
+    title: 'UI/UX Design Fundamentals',
+    description: 'Learn the principles of user interface and user experience design.',
+    imageUrl: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=500&h=300&fit=crop',
+    enrolled: false,
+  },
+])
 
-const dataRecentSales = [
-  {
-    name: 'Olivia Martin',
-    email: 'olivia.martin@email.com',
-    amount: 1999,
-  },
-  {
-    name: 'Jackson Lee',
-    email: 'jackson.lee@email.com',
-    amount: 39,
-  },
-  {
-    name: 'Isabella Nguyen',
-    email: 'isabella.nguyen@email.com',
-    amount: 299,
-  },
-  {
-    name: 'William Kim',
-    email: 'will@email.com',
-    amount: 99,
-  },
-  {
-    name: 'Sofia Davis',
-    email: 'sofia.davis@email.com',
-    amount: 39,
-  },
-]
+const showAllCourses = ref(!courses.value.some(course => course.enrolled))
+const router = useRouter()
 
-onMounted(() => {
-  dataCard.value = {
-    totalRevenue: 45231.89,
-    totalRevenueDesc: 20.1 / 100,
-    subscriptions: 2350,
-    subscriptionsDesc: 180.5 / 100,
-    sales: 12234,
-    salesDesc: 45 / 100,
-    activeNow: 573,
-    activeNowDesc: 201,
-  }
+const navigateToCourse = (courseId: string) => {
+  router.push(`/courses/${courseId}`)
+}
+
+const displayedCourses = computed(() => {
+  return showAllCourses.value ? courses.value : courses.value.filter(course => course.enrolled)
 })
 </script>
 
@@ -59,145 +49,48 @@ onMounted(() => {
   <div class="w-full flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <h2 class="text-2xl font-bold tracking-tight">
-        Dashboard
+        {{ showAllCourses ? 'All Courses' : 'My Enrolled Courses' }}
       </h2>
       <div class="flex items-center space-x-2">
-        <BaseDateRangePicker />
-        <Button>Download</Button>
+        <Button
+          variant="outline"
+          @click="showAllCourses = !showAllCourses"
+        >
+          <component
+            :is="showAllCourses ? GraduationCap : Book"
+            class="mr-2 h-4 w-4"
+          />
+          {{ showAllCourses ? 'Show Enrolled Courses' : 'Show All Courses' }}
+        </Button>
       </div>
     </div>
     <main class="flex flex-1 flex-col gap-4 md:gap-8">
-      <div class="grid gap-4 lg:grid-cols-4 md:grid-cols-2 md:gap-8">
-        <Card>
-          <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle class="text-sm font-medium">
-              Total Revenue
-            </CardTitle>
-            <DollarSign class="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div class="text-2xl font-bold">
-              <NumberFlow
-                :value="dataCard.totalRevenue"
-                :format="{ style: 'currency', currency: 'USD', trailingZeroDisplay: 'stripIfInteger' }"
-              />
-            </div>
-            <p class="text-xs text-muted-foreground">
-              <NumberFlow
-                :value="dataCard.totalRevenueDesc"
-                prefix="+"
-                :format="{ style: 'percent', minimumFractionDigits: 1 }"
-              />
-              from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle class="text-sm font-medium">
-              Subscriptions
-            </CardTitle>
-            <Users class="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div class="text-2xl font-bold">
-              <NumberFlow
-                :value="dataCard.subscriptions"
-                prefix="+"
-              />
-            </div>
-            <p class="text-xs text-muted-foreground">
-              <NumberFlow
-                :value="dataCard.subscriptionsDesc"
-                prefix="+"
-                :format="{ style: 'percent', minimumFractionDigits: 1 }"
-              /> from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle class="text-sm font-medium">
-              Sales
-            </CardTitle>
-            <CreditCard class="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div class="text-2xl font-bold">
-              <NumberFlow
-                :value="dataCard.sales"
-                prefix="+"
-              />
-            </div>
-            <p class="text-xs text-muted-foreground">
-              <NumberFlow
-                :value="dataCard.salesDesc"
-                prefix="+"
-                :format="{ style: 'percent', minimumFractionDigits: 1 }"
-              /> from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle class="text-sm font-medium">
-              Active Now
-            </CardTitle>
-            <Activity class="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div class="text-2xl font-bold">
-              <NumberFlow
-                :value="dataCard.activeNow"
-                prefix="+"
-              />
-            </div>
-            <p class="text-xs text-muted-foreground">
-              <NumberFlow
-                :value="dataCard.activeNowDesc"
-                prefix="+"
-              /> since last hour
-            </p>
-          </CardContent>
-        </Card>
+      <div v-if="displayedCourses.length === 0" class="text-center py-8">
+        <p class="text-muted-foreground">
+          {{ showAllCourses ? 'No courses available.' : 'You are not enrolled in any courses yet.' }}
+        </p>
       </div>
-      <div class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3 md:gap-8">
-        <Card class="xl:col-span-2">
-          <CardHeader>
-            <CardTitle>Overview</CardTitle>
+      <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <Card
+          v-for="course in displayedCourses"
+          :key="course.id"
+          class="cursor-pointer transition-all hover:shadow-lg"
+          @click="navigateToCourse(course.id)"
+        >
+          <CardHeader class="p-0">
+            <img
+              :src="course.imageUrl"
+              :alt="course.title"
+              class="aspect-video w-full object-cover"
+            />
           </CardHeader>
-          <CardContent class="pl-2">
-            <DashboardOverview />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Sales</CardTitle>
-          </CardHeader>
-          <CardContent class="grid gap-8">
-            <div
-              v-for="recentSales in dataRecentSales" :key="recentSales.name"
-              class="flex items-center gap-4"
-            >
-              <Avatar class="hidden h-9 w-9 sm:flex">
-                <AvatarFallback>{{ recentSales.name.split(' ').map((n) => n[0]).join('') }}</AvatarFallback>
-              </Avatar>
-              <div class="grid gap-1">
-                <p class="text-sm font-medium leading-none">
-                  {{ recentSales.name }}
-                </p>
-                <p class="text-sm text-muted-foreground">
-                  {{ recentSales.email }}
-                </p>
-              </div>
-              <div class="ml-auto font-medium">
-                <NumberFlow
-                  :value="recentSales.amount"
-                  :format="{ style: 'currency', currency: 'USD', trailingZeroDisplay: 'stripIfInteger' }"
-                  prefix="+"
-                />
-              </div>
-            </div>
+          <CardContent class="p-4">
+            <h3 class="text-lg font-semibold">
+              {{ course.title }}
+            </h3>
+            <p class="mt-2 text-sm text-muted-foreground">
+              {{ course.description }}
+            </p>
           </CardContent>
         </Card>
       </div>
