@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { useSidebar } from '~/components/ui/sidebar'
 import { toast } from '~/components/ui/toast'
+import type { User } from '~/models/User'
 
 defineProps<{
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
+  user: User
 }>()
 
 const { isMobile, setOpenMobile } = useSidebar()
@@ -43,13 +40,13 @@ const showModalTheme = ref(false)
             class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
             <Avatar class="h-8 w-8 rounded-lg">
-              <AvatarImage :src="user.avatar" :alt="user.name" />
+              <AvatarImage :src="user.avatar || ''" :alt="user.firstName + ' ' + user.lastName" />
               <AvatarFallback class="rounded-lg">
-                {{ user.name.split(' ').map((n) => n[0]).join('') }}
+                {{ user.firstName[0] + user.lastName[0] }}
               </AvatarFallback>
             </Avatar>
             <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-semibold">{{ user.name }}</span>
+              <span class="truncate font-semibold">{{ user.firstName }} {{ user.lastName }}</span>
               <span class="truncate text-xs">{{ user.email }}</span>
             </div>
             <Icon name="i-lucide-chevrons-up-down" class="ml-auto size-4" />
