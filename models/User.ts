@@ -3,7 +3,8 @@ export type UserRole = 'student' | 'teacher';
 
 export interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: UserRole;
   enrolledCourses?: string[]; // optional for students

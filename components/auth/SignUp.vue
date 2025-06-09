@@ -4,6 +4,9 @@ import { Loader2 } from 'lucide-vue-next'
 import PasswordInput from '~/components/PasswordInput.vue'
 
 const isLoading = ref(false)
+const firstName = ref('')
+const lastName = ref('')
+
 async function onSubmit(event: Event) {
   event.preventDefault()
   isLoading.value = true
@@ -18,19 +21,37 @@ async function onSubmit(event: Event) {
   <div :class="cn('grid gap-6', $attrs.class ?? '')">
     <form @submit="onSubmit">
       <div class="grid gap-4">
-        <div class="grid gap-2">
-          <Label for="name">
-            Name
-          </Label>
-          <Input
-            id="name"
-            placeholder="Enter your name"
-            type="text"
-            auto-capitalize="none"
-            auto-complete="name"
-            auto-correct="off"
-            :disabled="isLoading"
-          />
+        <div class="grid grid-cols-2 gap-4">
+          <div class="grid gap-2">
+            <Label for="firstName">
+              First Name
+            </Label>
+            <Input
+              id="firstName"
+              v-model="firstName"
+              placeholder="Enter your first name"
+              type="text"
+              auto-capitalize="none"
+              auto-complete="given-name"
+              auto-correct="off"
+              :disabled="isLoading"
+            />
+          </div>
+          <div class="grid gap-2">
+            <Label for="lastName">
+              Last Name
+            </Label>
+            <Input
+              id="lastName"
+              v-model="lastName"
+              placeholder="Enter your last name"
+              type="text"
+              auto-capitalize="none"
+              auto-complete="family-name"
+              auto-correct="off"
+              :disabled="isLoading"
+            />
+          </div>
         </div>
         <div class="grid gap-2">
           <Label for="email">
@@ -60,7 +81,7 @@ async function onSubmit(event: Event) {
         </div>
         <Button :disabled="isLoading">
           <Loader2 v-if="isLoading" class="mr-2 h-4 w-4 animate-spin" />
-          Sign In with Email
+          Sign Up with Email
         </Button>
       </div>
     </form>
