@@ -1,0 +1,62 @@
+import { config } from 'dotenv';
+import { initializeApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
+import { User, UserRole } from '../models/User';
+
+// Load environment variables from .env.test
+config({ path: '.env.test' });
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+describe('User Signup and Firestore Integration', () => {
+  const testUser = {
+    email: 'student.enrollment@example.com',
+    password: 'testPassword1234',
+    name: 'Test Student Enrollment',
+    role: 'student' as const,
+  };
+
+  test('should create a new user and store in Firestore', async () => {
+    // Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      testUser.email,
+      testUser.password
+    );
+
+    // Create user document in Firestore
+    const userData: User = {
+      id: userCredential.user.uid,
+      name: testUser.name,
+      email: testUser.email,
+      role: testUser.role as UserRole,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await setDoc(doc(db, 'users', userCredential.user.uid), userData);
+
+    // Verify user was created in Firestore
+    const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+    expect(userDoc.exists()).toBe(true);
+    
+    const storedUser = userDoc.data() as User;
+    expect(storedUser.email).toBe(testUser.email);
+    expect(storedUser.name).toBe(testUser.name);
+    expect(storedUser.role).toBe(testUser.role);
+  });
+}); 
