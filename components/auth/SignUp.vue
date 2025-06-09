@@ -2,18 +2,61 @@
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-vue-next'
 import PasswordInput from '~/components/PasswordInput.vue'
+import { UserController } from '~/controllers/UserController'
+import { toast } from '~/components/ui/toast'
+
+const { $auth, $db } = useNuxtApp()
+const userController = new UserController($auth, $db)
 
 const isLoading = ref(false)
 const firstName = ref('')
 const lastName = ref('')
+const email = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const error = ref('')
 
 async function onSubmit(event: Event) {
   event.preventDefault()
+  error.value = ''
   isLoading.value = true
 
-  setTimeout(() => {
+  try {
+    if (password.value !== confirmPassword.value) {
+      throw new Error('Passwords do not match')
+    }
+
+    await userController.registerUser(
+      email.value,
+      password.value,
+      firstName.value,
+      lastName.value
+    )
+
+    // Show success toast
+    toast({
+      title: "Success!",
+      description: "Your account has been created successfully.",
+      variant: "success",
+    })
+
+    //wait 2 seconds
+    await new Promise(resolve => setTimeout(resolve, 2000))
+
+    console.log('redirecting to dashboard')
+    // Now redirect to dashboard or home page
+    navigateTo('/')
+  } catch (err: any) {
+    // Show error toast
+    toast({
+      title: "Error",
+      description: err.message || 'An error occurred during registration',
+      variant: "destructive",
+    })
+    error.value = err.message || 'An error occurred during registration'
+  } finally {
     isLoading.value = false
-  }, 3000)
+  }
 }
 </script>
 
@@ -35,6 +78,7 @@ async function onSubmit(event: Event) {
               auto-complete="given-name"
               auto-correct="off"
               :disabled="isLoading"
+              required
             />
           </div>
           <div class="grid gap-2">
@@ -50,6 +94,7 @@ async function onSubmit(event: Event) {
               auto-complete="family-name"
               auto-correct="off"
               :disabled="isLoading"
+              required
             />
           </div>
         </div>
@@ -59,25 +104,27 @@ async function onSubmit(event: Event) {
           </Label>
           <Input
             id="email"
+            v-model="email"
             placeholder="name@example.com"
             type="email"
             auto-capitalize="none"
             auto-complete="email"
             auto-correct="off"
             :disabled="isLoading"
+            required
           />
         </div>
         <div class="grid gap-2">
           <Label for="password">
             Password
           </Label>
-          <PasswordInput id="password" />
+          <PasswordInput id="password" v-model="password" required />
         </div>
         <div class="grid gap-2">
           <Label for="confirm-password">
             Confirm Password
           </Label>
-          <PasswordInput id="confirm-password" />
+          <PasswordInput id="confirm-password" v-model="confirmPassword" required />
         </div>
         <Button :disabled="isLoading">
           <Loader2 v-if="isLoading" class="mr-2 h-4 w-4 animate-spin" />
