@@ -1,8 +1,9 @@
 import { config } from 'dotenv';
 import { initializeApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
-import { User, UserRole } from '../models/User';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { CourseController } from '../controllers/CourseController';
+import { Lecture, Section, Course } from '../models/Course';
 
 // Load environment variables from .env.test
 config({ path: '.env.test' });
@@ -22,56 +23,65 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-describe('Teacher Signup and Firestore Integration', () => {
-  const testTeacher = {
-    email: 'teacher@example.com',
-    password: 'testPassword1234',
-    firstName: 'Test',
-    lastName: 'Teacher',
-    role: 'teacher' as const,
-  };
+describe('Teacher Course Creation', () => {
+  let courseController: CourseController;
 
-  afterAll(async () => {
-    // Clean up: Delete the test user from Firebase Auth
-    if (auth.currentUser) {
-      //delete the user from firestore
-      console.log('Deleting test user from firestore', auth.currentUser.uid);
-      await deleteDoc(doc(db, 'users', auth.currentUser.uid));
-      
-      console.log('Deleting test user', auth.currentUser.uid);
-      await auth.currentUser.delete();
-    }
+  beforeAll(async () => {
+    // Sign in with existing teacher
+    await signInWithEmailAndPassword(
+      auth,
+      'teacher@example.com',
+      'testPassword1234'
+    );
+    courseController = new CourseController(db);
   });
 
-  test('should create a new teacher user and store in Firestore', async () => {
-    // Create user in Firebase Auth
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      testTeacher.email,
-      testTeacher.password
-    );
-
-    // Create user document in Firestore
-    const userData: User = {
-      id: userCredential.user.uid,
-      firstName: testTeacher.firstName,
-      lastName: testTeacher.lastName,
-      email: testTeacher.email,
-      role: testTeacher.role as UserRole,
+  test('should create a course with a section and lecture', async () => {
+    // Create course
+    const courseData: Course = {
+      title: 'Test Course',
+      description: 'A test course',
+      id: 'test-course-id',
+      sections: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    await setDoc(doc(db, 'users', userCredential.user.uid), userData);
+    const course = await courseController.createCourse(courseData);
+    expect(course.id).toBeDefined();
+    expect(course.title).toBe(courseData.title);
 
-    // Verify user was created in Firestore
-    const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
-    expect(userDoc.exists()).toBe(true);
-    
-    const storedUser = userDoc.data() as User;
-    expect(storedUser.email).toBe(testTeacher.email);
-    expect(storedUser.firstName).toBe(testTeacher.firstName);
-    expect(storedUser.lastName).toBe(testTeacher.lastName);
-    expect(storedUser.role).toBe(testTeacher.role);
+    // Create section
+    const sectionData: Section = {
+      title: 'Test Section',
+      id: 'test-section-id',
+      lectures: [],
+    };
+
+    const section = await courseController.addSection(course.id, sectionData);
+    expect(section.id).toBeDefined();
+    expect(section.title).toBe(sectionData.title);
+
+    // Create lecture
+    const lectureData: Lecture = {
+      title: 'Test Lecture',
+      isVideo: false,
+      isHTML: true,
+      isPDF: false,
+      isQuiz: false,
+      videoUrl: null,
+      html: '<p>Test lecture content</p>',
+      pdfUrl: null,
+      quizId: null,
+      id: 'test-lecture-id',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const lecture = await courseController.addLecture(course.id, section.id, lectureData);
+    expect(lecture.id).toBeDefined();
+    expect(lecture.title).toBe(lectureData.title);
+    expect(lecture.isHTML).toBe(true);
+    expect(lecture.html).toContain('Test lecture content');
   });
-}); 
+});
