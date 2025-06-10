@@ -62,7 +62,7 @@ const showModalTheme = ref(false)
               <Avatar class="h-8 w-8 rounded-lg">
                 <AvatarImage :src="user.avatar" :alt="user.name" />
                 <AvatarFallback class="rounded-lg">
-                  {{ user.name.split(' ').map((n) => n[0]).join('') }}
+                  {{ user.firstName.charAt(0) + user.lastName.charAt(0) }}
                 </AvatarFallback>
               </Avatar>
               <div class="grid flex-1 text-left text-sm leading-tight">
