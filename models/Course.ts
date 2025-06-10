@@ -1,9 +1,16 @@
 export interface Lecture {
   id: string;
   title: string;
-  type: 'video' | 'quiz';
-  content: string;
-  duration?: number;
+  isVideo: boolean;
+  isHTML: boolean;
+  isPDF: boolean;
+  isQuiz: boolean;
+  videoUrl: string | null;
+  html: string | null;
+  pdfUrl: string | null;
+  quizId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Section {
@@ -16,7 +23,14 @@ export interface Course {
   id: string;
   title: string;
   description: string;
+  courseImageUrl: string | null;
   sections: Section[];
   createdAt: Date;
   updatedAt: Date;
 }
+
+//Firestore Structure
+/**
+ * courses/{courseId}/sections/{sectionId}/lectures/{lectureId}
+ * 
+ */
