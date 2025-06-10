@@ -21,16 +21,16 @@ const teams: {
       logo: 'i-lucide-gallery-vertical-end',
       plan: 'Enterprise',
     },
-    {
-      name: 'Acme Corp.',
-      logo: 'i-lucide-audio-waveform',
-      plan: 'Startup',
-    },
-    {
-      name: 'Evil Corp.',
-      logo: 'i-lucide-command',
-      plan: 'Free',
-    },
+    // {
+    //   name: 'Acme Corp.',
+    //   logo: 'i-lucide-audio-waveform',
+    //   plan: 'Startup',
+    // },
+    // {
+    //   name: 'Evil Corp.',
+    //   logo: 'i-lucide-command',
+    //   plan: 'Free',
+    // },
   ]
 
 const { user } = useUser()
