@@ -40,7 +40,10 @@ const showModalTheme = ref(false)
             class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
             <Avatar class="h-8 w-8 rounded-lg">
-              <AvatarImage :src="user.avatar || ''" :alt="user.firstName + ' ' + user.lastName" />
+              <AvatarImage
+                :src="`https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(user.firstName + user.lastName)}`"
+                :alt="user.firstName + ' ' + user.lastName"
+              />
               <AvatarFallback class="rounded-lg">
                 {{ user.firstName + user.lastName }}
               </AvatarFallback>
