@@ -3,3 +3,6 @@ NODE_VERSION = "20.11.1"
 
 [build]
 command = "npm install -g npm@10.7.0 && pnpm install && npm run build"
+
+[build.environment]
+SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
