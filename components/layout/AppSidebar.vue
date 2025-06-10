@@ -35,10 +35,6 @@ const teams: {
 
 const { user } = useUser()
 const { sidebar } = useAppSettings()
-const firstName = "Nuzair"
-const lastName = "Nuwais"
-const email = "nuzairnuwais@gmail.com"
-
 </script>
 
 <template>
@@ -55,33 +51,16 @@ const email = "nuzairnuwais@gmail.com"
         <component :is="resolveNavItemComponent(item)" v-for="(item, index) in nav.items" :key="index" :item="item" />
       </SidebarGroup>
       <SidebarGroup class="mt-auto">
-        <component :is="resolveNavItemComponent(item)" v-for="(item, index) in navMenuBottom" :key="index" :item="item"
-          size="sm" />
+        <component :is="resolveNavItemComponent(item)" v-for="(item, index) in navMenuBottom" :key="index" :item="item" size="sm" />
       </SidebarGroup>
     </SidebarContent>
     <SidebarFooter>
       <LayoutSidebarNavFooter v-if="user" :user="user" />
     </SidebarFooter>
     <SidebarRail />
-    <div class="flex flex-row gap-5 items-center mb-2">
-      <label className="btn btn-ghost btn-circle avatar">
-        <div className="w-10 rounded-full">
-          <img src='https://api.dicebear.com/9.x/lorelei/svg?seed=Aiden' alt="profile" />
-        </div>
-      </label>
-      <div class="flex flex-col text-[0.9rem]">
-        <div>
-          {{ firstName }} {{ lastName }}
-
-        </div>
-        <div>
-          {{ email }}
-        </div>
-      </div>
-
-    </div>
-
   </Sidebar>
 </template>
 
-<style scoped></style>
+<style scoped>
+
+</style>
