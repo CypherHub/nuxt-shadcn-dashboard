@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, deleteApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { CourseController } from '../controllers/CourseController';
@@ -25,6 +25,7 @@ const db = getFirestore(app);
 
 describe('Teacher Course Creation', () => {
   let courseController: CourseController;
+  let createdCourseId: string;
 
   beforeAll(async () => {
     // Sign in with existing teacher
@@ -36,6 +37,19 @@ describe('Teacher Course Creation', () => {
     courseController = new CourseController(db);
   });
 
+  afterAll(async () => {
+    // Clean up the test course if it was created
+    // if (createdCourseId) {
+    //   await courseController.deleteCourse(createdCourseId);
+    // }
+    
+    // Sign out
+    await auth.signOut();
+    
+    // Clean up Firebase app
+    await deleteApp(app);
+  });
+
   test('should create a course with a section and lecture', async () => {
     // Create course
     const courseData: Course = {
@@ -45,9 +59,11 @@ describe('Teacher Course Creation', () => {
       sections: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      courseImageUrl: null,
     };
 
     const course = await courseController.createCourse(courseData);
+    createdCourseId = course.id; // Store the course ID for cleanup
     expect(course.id).toBeDefined();
     expect(course.title).toBe(courseData.title);
 

@@ -23,6 +23,7 @@ export interface Course {
   id: string;
   title: string;
   description: string;
+  courseImageUrl: string | null;
   sections: Section[];
   createdAt: Date;
   updatedAt: Date;
