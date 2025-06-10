@@ -59,7 +59,7 @@ describe('Teacher Course Creation', () => {
       sections: [],
       createdAt: new Date(),
       updatedAt: new Date(),
-      courseImageUrl: null,
+      courseImageUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&h=300&fit=cropnull',
     };
 
     const course = await courseController.createCourse(courseData);

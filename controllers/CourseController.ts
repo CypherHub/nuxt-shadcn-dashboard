@@ -1,4 +1,4 @@
-import { doc, setDoc, collection, addDoc, updateDoc } from 'firebase/firestore'
+import { doc, setDoc, collection, addDoc, updateDoc, getDocs } from 'firebase/firestore'
 import type { Course, Section, Lecture } from '../models/Course'
 
 export class CourseController {
@@ -57,6 +57,29 @@ export class CourseController {
       return lecture
     } catch (error) {
       console.error('Error adding lecture:', error)
+      throw error
+    }
+  }
+
+  async getAllCourses(): Promise<Course[]> {
+    try {
+      const coursesRef = collection(this.db, 'courses')
+      const coursesSnapshot = await getDocs(coursesRef)
+      
+      const courses: Course[] = []
+      coursesSnapshot.forEach((doc) => {
+        const courseData = doc.data()
+        // Convert Firestore timestamps to Date objects
+        courses.push({
+          ...courseData,
+          createdAt: courseData.createdAt?.toDate(),
+          updatedAt: courseData.updatedAt?.toDate(),
+        } as Course)
+      })
+
+      return courses
+    } catch (error) {
+      console.error('Error fetching courses:', error)
       throw error
     }
   }
