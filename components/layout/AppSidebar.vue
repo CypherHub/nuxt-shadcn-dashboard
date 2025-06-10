@@ -45,7 +45,7 @@ const email = "nuzairnuwais@gmail.com"
   <Sidebar :collapsible="sidebar.collapsible" :side="sidebar.side" :variant="sidebar.variant">
     <SidebarHeader>
       <LayoutSidebarNavHeader :teams="teams" />
-      <Search />
+      <!-- <Search /> -->
     </SidebarHeader>
     <SidebarContent>
       <SidebarGroup v-for="(nav, indexGroup) in navMenu" :key="indexGroup">
