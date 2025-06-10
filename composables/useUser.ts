@@ -2,23 +2,34 @@ import type { User } from '~/models/User'
 import { doc, getDoc } from 'firebase/firestore'
 
 export const useUser = () => {
-  const { $db } = useNuxtApp()
+  const { $db, $auth } = useNuxtApp()
   const user = useState<User | null>('user', () => null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const fetchUserData = async (uid: string) => {
+  const fetchUserData = async () => {
     try {
       loading.value = true
       error.value = null
       
-      console.log('fetching user data for uid', uid)
-      const userDoc = await getDoc(doc($db, 'users', uid))
+      const currentUser = $auth.currentUser
+      if (!currentUser) {
+        throw new Error('No authenticated user found')
+      }
+      
+      console.log('fetching user data for uid', currentUser.uid)
+      const userDoc = await getDoc(doc($db, 'users', currentUser.uid))
       if (!userDoc.exists()) {
         throw new Error('User not found')
       }
       
-      user.value = userDoc.data() as User
+      const data = userDoc.data() as User
+      
+      user.value = {
+        ...data,
+        id: data.id ?? userDoc.id
+      }
+      console.log("[useUser] user.value", user.value);
       return user.value
     } catch (e: any) {
       error.value = e.message

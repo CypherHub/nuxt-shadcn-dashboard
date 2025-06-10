@@ -20,7 +20,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
       const unsubscribe = $auth.onAuthStateChanged(async (firebaseUser) => {
         if (firebaseUser) {
           // Fetch complete user data from Firestore
-          await fetchUserData(firebaseUser.uid)
+          await fetchUserData()
         } else {
           clearUser()
         }
@@ -48,5 +48,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo('/')
   }
 
-  console.log('User authenticated, allowing access')
+  console.log('User authenticated, allowing access', user.value)
+  await fetchUserData()
 })

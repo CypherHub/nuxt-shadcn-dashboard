@@ -6,16 +6,22 @@ const { courses, loading: coursesLoading, error: coursesError, fetchCourses } = 
 const { enrollments, loading: enrollmentsLoading, error: enrollmentsError, getAllEnrolledCourses } = useEnrollment()
 const showAllCourses = ref(true)
 const router = useRouter()
+const { user } = useAuth() // or useUser(), depending on your actual composable
 
-// Fetch courses when component is mounted
-onMounted(async () => {
-  try {
-    await fetchCourses()
-    await getAllEnrolledCourses()
-  } catch (e) {
-    console.error('Failed to fetch courses:', e)
-  }
-})
+watch(
+  () => user.value,
+  async (newUser) => {
+    if (newUser) {
+      try {
+        await fetchCourses()
+        await getAllEnrolledCourses()
+      } catch (e) {
+        console.error('Failed to fetch courses:', e)
+      }
+    }
+  },
+  { immediate: true }
+)
 
 const navigateToCourse = (courseId: string) => {
   router.push(`/courses/${courseId}`)
