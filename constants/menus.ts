@@ -10,6 +10,11 @@ export const navMenu: NavMenu[] = [
         link: '/',
       },
       {
+        title: 'Create Course',
+        icon: 'i-lucide-plus',
+        link: '/create-course',
+      },
+      {
         title: 'Email',
         icon: 'i-lucide-mail',
         link: '/email',
