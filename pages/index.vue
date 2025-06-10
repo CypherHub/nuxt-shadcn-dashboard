@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Book, GraduationCap } from 'lucide-vue-next'
+import type { Course } from '~/models/Course'
 
-const { courses, loading, error, fetchCourses } = useCourse()
+const { courses, loading: coursesLoading, error: coursesError, fetchCourses } = useCourse()
+const { enrollments, loading: enrollmentsLoading, error: enrollmentsError, getAllEnrolledCourses } = useEnrollment()
 const showAllCourses = ref(true)
 const router = useRouter()
 
@@ -9,6 +11,7 @@ const router = useRouter()
 onMounted(async () => {
   try {
     await fetchCourses()
+    await getAllEnrolledCourses()
   } catch (e) {
     console.error('Failed to fetch courses:', e)
   }
@@ -19,8 +22,29 @@ const navigateToCourse = (courseId: string) => {
 }
 
 const displayedCourses = computed(() => {
-  return courses.value
-})
+  if (showAllCourses.value) {
+    return courses.value
+  } else {
+    // Get the set of enrolled course IDs for efficient lookup
+    const enrolledCourseIds = new Set(enrollments.value.map(e => e.courseId))
+    
+    // Filter courses to only show enrolled ones and merge with enrollment data
+    return courses.value
+      .filter(course => enrolledCourseIds.has(course.id))
+      .map(course => {
+        const enrollment = enrollments.value.find(e => e.courseId === course.id)
+        return {
+          id: course.id,
+          title: course.title,
+          description: `Progress: ${enrollment?.overallProgress}% complete. Last accessed: ${new Date(enrollment?.lastAccessedAt || '').toLocaleDateString()}`,
+          courseImageUrl: course.courseImageUrl
+        }
+      })
+  }
+}) as ComputedRef<Course[]>
+
+const isLoading = computed(() => coursesLoading.value || enrollmentsLoading.value)
+const error = computed(() => coursesError.value || enrollmentsError.value)
 </script>
 
 <template>

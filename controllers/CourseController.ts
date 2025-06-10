@@ -11,6 +11,7 @@ export class CourseController {
         ...courseData,
         id: courseRef.id,
         createdAt: new Date(),
+        teacherIds: courseData.teacherIds,
         updatedAt: new Date(),
       }
 

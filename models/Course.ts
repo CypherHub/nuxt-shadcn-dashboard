@@ -24,6 +24,7 @@ export interface Course {
   title: string;
   description: string;
   courseImageUrl: string | null;
+  teacherIds: string[];
   sections: Section[];
   createdAt: Date;
   updatedAt: Date;

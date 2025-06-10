@@ -62,6 +62,7 @@
     "@nuxtjs/color-mode": "^3.5.2",
     "@pinia/nuxt": "^0.5.1",
     "@types/jest": "^29.5.14",
+    "@types/mocha": "^10.0.10",
     "@unocss/eslint-plugin": "^66.0.0",
     "@unocss/nuxt": "^66.0.0",
     "@vee-validate/zod": "^4.15.0",

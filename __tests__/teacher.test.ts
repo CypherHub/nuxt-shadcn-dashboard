@@ -26,6 +26,7 @@ const db = getFirestore(app);
 describe('Teacher Course Creation', () => {
   let courseController: CourseController;
   let createdCourseId: string;
+  let teacherId: string;
 
   beforeAll(async () => {
     // Sign in with existing teacher
@@ -34,6 +35,7 @@ describe('Teacher Course Creation', () => {
       'teacher@example.com',
       'testPassword1234'
     );
+    teacherId = auth.currentUser?.uid as string;
     courseController = new CourseController(db);
   });
 
@@ -56,6 +58,7 @@ describe('Teacher Course Creation', () => {
       title: 'Test Course',
       description: 'A test course',
       id: 'test-course-id',
+      teacherIds: [teacherId],
       sections: [],
       createdAt: new Date(),
       updatedAt: new Date(),
