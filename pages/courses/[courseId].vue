@@ -58,8 +58,6 @@ onMounted(() => {
         @collapse="onCollapse"
       />
 
-      <!-- Resize Handle -->
-      <ResizableHandle id="course-handle" with-handle />
 
       <!-- Right Side Content -->
       <ResizablePanel id="course-content-panel" :default-size="82" :min-size="30">

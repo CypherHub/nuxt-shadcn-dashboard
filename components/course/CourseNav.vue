@@ -45,16 +45,12 @@ function onExpand() {
 </script>
 
 <template>
-  <ResizablePanel
-    id="course-nav-panel"
-    :default-size="10"
-    :collapsed-size="4"
-    collapsible
-    :min-size="10"
-    :max-size="15"
-    :class="cn(isCollapsed && 'min-w-[50px] transition-all duration-300 ease-in-out')"
-    @expand="onExpand"
-    @collapse="onCollapse"
+  <div
+    :class="[
+      'border-r',
+      isCollapsed ? 'w-[50px]' : 'w-[140px]',
+      'transition-all duration-300 ease-in-out'
+    ]"
   >
     <div class="flex h-[56px] items-center justify-center px-2">
       <h2 class="text-lg font-semibold truncate">
@@ -73,5 +69,5 @@ function onExpand() {
         <span v-if="!isCollapsed">{{ link.title }}</span>
       </Button>
     </nav>
-  </ResizablePanel>
-</template> 
+  </div>
+</template>
