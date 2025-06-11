@@ -32,10 +32,23 @@ export const useCourse = () => {
     }
   }
 
+  const fetchCourseById = async (id: string) => {
+    console.log('[useCourse] fetchCourseById called for courseId:', id)
+    try {
+      const course = await courseController.getCourseDetails(id)
+      console.log('[useCourse] Course fetched:', course)
+      return course
+    } catch (e: any) {
+      console.error('[useCourse] Error fetching course:', e)
+      throw e
+    }
+  }
+
   return {
     courses,
     loading,
     error,
-    fetchCourses
+    fetchCourses,
+    fetchCourseById
   }
 } 

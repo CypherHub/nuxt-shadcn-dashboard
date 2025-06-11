@@ -1,4 +1,4 @@
-import { doc, setDoc, collection, addDoc, updateDoc, getDocs } from 'firebase/firestore'
+import { doc, setDoc, collection, addDoc, updateDoc, getDocs, getDoc } from 'firebase/firestore'
 import type { Course, Section, Lecture } from '../models/Course'
 
 export class CourseController {
@@ -89,6 +89,27 @@ export class CourseController {
       return courses
     } catch (error) {
       console.error('Error fetching courses:', error)
+      throw error
+    }
+  }
+
+  async getCourseDetails(id: string): Promise<Course> {
+    console.log('[CourseController] getCourseDetails called for courseId:', id)
+    try {
+      const courseRef = doc(this.db, 'courses', id)
+      const courseDoc = await getDoc(courseRef)
+      if (!courseDoc.exists()) {
+        console.error('[CourseController] Course not found for id:', id)
+        throw new Error('Course not found')
+      }
+      const courseData = courseDoc.data()
+      return {
+        ...courseData,
+        createdAt: courseData.createdAt?.toDate(),
+        updatedAt: courseData.updatedAt?.toDate(),
+      } as Course
+    } catch (error) {
+      console.error('Error fetching course details:', error)
       throw error
     }
   }
