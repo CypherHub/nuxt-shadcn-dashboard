@@ -8,7 +8,7 @@ export interface User {
   email: string;
   role: UserRole;
   enrolledCourses?: string[]; // optional for students
-  teacherCourses?: string[]; // optional for teachers
+  teachingCourses?: string[]; // optional for teachers
   createdAt: Date;
   updatedAt: Date;
 }
