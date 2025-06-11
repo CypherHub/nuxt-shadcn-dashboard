@@ -23,18 +23,18 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-describe('Teacher Course Creation', () => {
+describe('Student Course Creation', () => {
   let courseController: CourseController;
-  let teacherId: string;
+  let studentId: string;
 
   beforeAll(async () => {
-    // Sign in with existing teacher
+    // Sign in with existing student
     await signInWithEmailAndPassword(
       auth,
-      'teacher@example.com',
-      'testPassword1234'
+      'student@example.com',
+      'Testing123!'
     );
-    teacherId = auth.currentUser?.uid as string;
+    studentId = auth.currentUser?.uid as string;
     courseController = new CourseController(db);
   });
 
@@ -46,13 +46,13 @@ describe('Teacher Course Creation', () => {
     await deleteApp(app);
   });
 
-  test('should throw error when teacher tries to create a course', async () => {
+  test('should throw error when student tries to create a course', async () => {
     // Create course data
     const courseData: Course = {
       title: 'Test Course',
       description: 'A test course',
       id: 'test-course-id',
-      teacherIds: [teacherId],
+      teacherIds: [studentId],
       sections: [],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -60,6 +60,6 @@ describe('Teacher Course Creation', () => {
     };
 
     // Attempt to create course and expect it to fail
-    await expect(courseController.createCourse(courseData)).rejects.toThrow('Unauthorized: Only admins can create courses');
+    await expect(courseController.createCourse(courseData)).rejects.toThrow('7 PERMISSION_DENIED: Missing or insufficient permissions.');
   });
 });
