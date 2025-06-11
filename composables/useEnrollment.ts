@@ -1,6 +1,5 @@
 import type { Enrollment } from '~/models/Enrollment'
-import type { Course } from '~/models/Course'
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore'
+import { EnrollmentController } from '~/controllers/EnrollmentController'
 
 export const useEnrollment = () => {
   const { $db } = useNuxtApp()
@@ -9,6 +8,7 @@ export const useEnrollment = () => {
   const enrollments = useState<Enrollment[]>('enrollments', () => [])
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const enrollmentController = new EnrollmentController($db)
 
   // Get all courses the logged-in user is enrolled in
   const getAllEnrolledCourses = async () => {
@@ -21,23 +21,8 @@ export const useEnrollment = () => {
     try {
       loading.value = true
       error.value = null
-      console.log('[useEnrollment] Querying enrollments for user:', user.value.id)
-
-      const enrollmentsQuery = query(
-        collection($db, 'enrollments'),
-        where('userId', '==', user.value.id),
-        orderBy('enrolledAt', 'desc')
-      )
-
-      const enrollmentsSnapshot = await getDocs(enrollmentsQuery)
-      console.log('[useEnrollment] Fetched enrollmentsSnapshot:', enrollmentsSnapshot.size)
-      const enrollmentsData = enrollmentsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Enrollment[]
-
+      const enrollmentsData = await enrollmentController.getUserEnrollments(user.value.id)
       enrollments.value = enrollmentsData
-      console.log('[useEnrollment] enrollments.value updated:', enrollmentsData)
       return enrollmentsData
     } catch (e: any) {
       error.value = e.message
@@ -45,7 +30,6 @@ export const useEnrollment = () => {
       throw e
     } finally {
       loading.value = false
-      console.log('[useEnrollment] getAllEnrolledCourses loading finished')
     }
   }
 
@@ -60,30 +44,13 @@ export const useEnrollment = () => {
     try {
       loading.value = true
       error.value = null
-      console.log('[useEnrollment] Querying enrollments for course:', courseId)
-
-      const enrollmentsQuery = query(
-        collection($db, 'enrollments'),
-        where('courseId', '==', courseId),
-        orderBy('enrolledAt', 'desc')
-      )
-
-      const enrollmentsSnapshot = await getDocs(enrollmentsQuery)
-      console.log('[useEnrollment] Fetched enrollmentsSnapshot:', enrollmentsSnapshot.size)
-      const enrollmentsData = enrollmentsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Enrollment[]
-
-      console.log('[useEnrollment] Returning enrollmentsData:', enrollmentsData)
-      return enrollmentsData
+      return await enrollmentController.getCourseEnrollments(courseId)
     } catch (e: any) {
       error.value = e.message
       console.error('[useEnrollment] Error in getAllStudentEnrollments:', e)
       throw e
     } finally {
       loading.value = false
-      console.log('[useEnrollment] getAllStudentEnrollments loading finished')
     }
   }
 
@@ -93,29 +60,59 @@ export const useEnrollment = () => {
     try {
       loading.value = true
       error.value = null
-
-      const enrollmentDoc = await getDoc(doc($db, 'enrollments', enrollmentId))
-      if (!enrollmentDoc.exists()) {
-        console.error('[useEnrollment] Enrollment not found for id:', enrollmentId)
-        throw new Error('Enrollment not found')
-      }
-
-      const data = {
-        id: enrollmentDoc.id,
-        ...enrollmentDoc.data()
-      } as Enrollment
-      console.log('[useEnrollment] Returning enrollment:', data)
-      return data
+      return await enrollmentController.getEnrollment(enrollmentId)
     } catch (e: any) {
       error.value = e.message
       console.error('[useEnrollment] Error in getEnrollment:', e)
       throw e
     } finally {
       loading.value = false
-      console.log('[useEnrollment] getEnrollment loading finished')
     }
   }
 
+  // Create a new enrollment
+  const createEnrollment = async (courseId: string) => {
+    console.log('[useEnrollment] createEnrollment called with courseId:', courseId)
+    if (!user.value) {
+      throw new Error('User not authenticated')
+    }
+
+    try {
+      loading.value = true
+      error.value = null
+      return await enrollmentController.createEnrollment(user.value.id, courseId)
+    } catch (e: any) {
+      error.value = e.message
+      console.error('[useEnrollment] Error in createEnrollment:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Update enrollment progress
+  const updateEnrollmentProgress = async (
+    enrollmentId: string,
+    sections: Enrollment['sections'],
+    overallProgress: number
+  ) => {
+    console.log('[useEnrollment] updateEnrollmentProgress called')
+    try {
+      loading.value = true
+      error.value = null
+      return await enrollmentController.updateEnrollmentProgress(
+        enrollmentId,
+        sections,
+        overallProgress
+      )
+    } catch (e: any) {
+      error.value = e.message
+      console.error('[useEnrollment] Error in updateEnrollmentProgress:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
 
   return {
     enrollments,
@@ -123,6 +120,8 @@ export const useEnrollment = () => {
     error,
     getAllEnrolledCourses,
     getAllStudentEnrollments,
-    getEnrollment
+    getEnrollment,
+    createEnrollment,
+    updateEnrollmentProgress
   }
 } 

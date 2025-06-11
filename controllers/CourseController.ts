@@ -103,8 +103,40 @@ export class CourseController {
         throw new Error('Course not found')
       }
       const courseData = courseDoc.data()
+
+      // Fetch sections
+      const sectionsRef = collection(this.db, `courses/${id}/sections`)
+      const sectionsSnapshot = await getDocs(sectionsRef)
+      const sections: Section[] = []
+
+      // Fetch lectures for each section
+      for (const sectionDoc of sectionsSnapshot.docs) {
+        const sectionData = sectionDoc.data()
+        const lecturesRef = collection(this.db, `courses/${id}/sections/${sectionDoc.id}/lectures`)
+        const lecturesSnapshot = await getDocs(lecturesRef)
+        const lectures: Lecture[] = []
+
+        lecturesSnapshot.forEach((lectureDoc) => {
+          const lectureData = lectureDoc.data()
+          lectures.push({
+            ...lectureData,
+            id: lectureDoc.id,
+            createdAt: lectureData.createdAt?.toDate(),
+            updatedAt: lectureData.updatedAt?.toDate(),
+          } as Lecture)
+        })
+
+        sections.push({
+          ...sectionData,
+          id: sectionDoc.id,
+          lectures,
+        } as Section)
+      }
+
       return {
         ...courseData,
+        id: courseDoc.id,
+        sections,
         createdAt: courseData.createdAt?.toDate(),
         updatedAt: courseData.updatedAt?.toDate(),
       } as Course
