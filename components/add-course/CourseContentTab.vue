@@ -85,20 +85,25 @@ function addLecture() {
     </div>
 
     <!-- Section List -->
-    <div v-if="sections.length > 0" class="space-y-4">
+    <div v-if="sections.length > 0" class="space-y-6">
       <div
         v-for="section in sections"
         :key="section.id"
-        class="border rounded-lg p-4 bg-background"
+        class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm p-6"
       >
-        <div class="flex items-center justify-between mb-2">
-          <h3 class="font-medium">{{ section.title }}</h3>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-bold text-primary">{{ section.title }}</h3>
           <Button size="sm" @click="openLectureModal(section.id)">+ Add Lecture</Button>
         </div>
-        <ul class="space-y-2">
+        <ul class="space-y-2 pl-4">
           <li v-if="section.lectures.length === 0" class="text-muted-foreground italic">No lectures yet.</li>
-          <li v-for="lecture in section.lectures" :key="lecture.id" class="flex items-center gap-2">
-            <span class="font-semibold">{{ lecture.title }}</span>
+          <li
+            v-for="lecture in section.lectures"
+            :key="lecture.id"
+            class="flex items-center gap-2 bg-muted/60 border-l-4 border-primary/40 rounded px-3 py-2"
+          >
+            <span class="inline-block w-2 h-2 rounded-full bg-primary/60 mr-2"></span>
+            <span class="font-medium text-foreground">{{ lecture.title }}</span>
             <span class="text-xs text-muted-foreground">({{ lecture.type }})</span>
             <span class="text-xs text-muted-foreground truncate max-w-xs">{{ lecture.content }}</span>
           </li>
