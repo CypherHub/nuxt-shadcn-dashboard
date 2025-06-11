@@ -3,9 +3,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
 
 const courseTitle = ref('')
 const courseDescription = ref('')
+
+const handleSave = () => {
+  // TODO: Implement save functionality
+  console.log('Saving course:', { title: courseTitle.value, description: courseDescription.value })
+}
 </script>
 
 <template>
@@ -30,6 +36,9 @@ const courseDescription = ref('')
           placeholder="Enter course description"
           class="min-h-[100px]"
         />
+      </div>
+      <div class="flex justify-end">
+        <Button @click="handleSave">Save</Button>
       </div>
     </CardContent>
   </Card>

@@ -13,7 +13,7 @@ import CoursePreviewTab from '@/components/add-course/CoursePreviewTab.vue'
       <h2 class="text-2xl font-bold tracking-tight">
         Edit Course
       </h2>
-      <Button>Save Course</Button>
+      
     </div>
 
     <Tabs default-value="settings" class="w-full">
