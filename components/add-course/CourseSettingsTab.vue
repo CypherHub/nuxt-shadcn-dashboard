@@ -4,9 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import type { Course } from '~/models/Course'
 
-const courseTitle = ref('')
-const courseDescription = ref('')
+const props = defineProps<{
+  course: Course | null
+}>()
+
+const courseTitle = ref(props.course?.title || '')
+const courseDescription = ref(props.course?.description || '')
 
 const handleSave = () => {
   // TODO: Implement save functionality
