@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useCourse } from '~/composables/useCourse'
 import type { Course, Section, Lecture } from '~/models/Course'
 import { Home, BookOpen, Users, HelpCircle } from 'lucide-vue-next'
+import CourseNav from '~/components/course/CourseNav.vue'
 
 const route = useRoute()
 const courseId = route.params.courseId as string
@@ -29,29 +30,6 @@ const fetchCourseDetails = async () => {
   }
 }
 
-const navLinks = [
-  {
-    title: 'Home',
-    icon: 'lucide:home',
-    variant: 'default',
-  },
-  {
-    title: 'Syllabus',
-    icon: 'lucide:book-open',
-    variant: 'ghost',
-  },
-  {
-    title: 'People',
-    icon: 'lucide:users',
-    variant: 'ghost',
-  },
-  {
-    title: 'Quizzes',
-    icon: 'lucide:help-circle',
-    variant: 'ghost',
-  },
-]
-
 function onCollapse() {
   isCollapsed.value = true
 }
@@ -73,35 +51,12 @@ onMounted(() => {
       class="h-full max-h-[calc(100dvh-53px-3rem)] items-stretch"
     >
       <!-- Left Side Navigation -->
-      <ResizablePanel
-        id="course-nav-panel"
-        :default-size="18"
-        :collapsed-size="4"
-        collapsible
-        :min-size="15"
-        :max-size="20"
-        :class="cn(isCollapsed && 'min-w-[50px] transition-all duration-300 ease-in-out')"
+      <CourseNav
+        :course="course"
+        :is-collapsed="isCollapsed"
         @expand="onExpand"
         @collapse="onCollapse"
-      >
-        <div class="flex h-[56px] items-center justify-center px-2">
-          <h2 class="text-lg font-semibold truncate">
-            {{ course?.title || 'Course' }}
-          </h2>
-        </div>
-        <Separator />
-        <nav class="flex flex-col gap-1 p-2">
-          <Button
-            v-for="link in navLinks"
-            :key="link.title"
-            :variant="link.variant"
-            class="w-full justify-start"
-          >
-            <Icon :name="link.icon" class="mr-2 h-4 w-4" />
-            <span v-if="!isCollapsed">{{ link.title }}</span>
-          </Button>
-        </nav>
-      </ResizablePanel>
+      />
 
       <!-- Resize Handle -->
       <ResizableHandle id="course-handle" with-handle />
