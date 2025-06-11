@@ -1,19 +1,28 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
+import type { Course, Lecture } from '~/models/Course'
+import { toast } from '~/components/ui/toast'
+
+// Change props to accept the full course object
+const props = defineProps<{
+  course: Course | null
+}>()
+
+// Import and use the course composable
+const { addSection, addLecture, loading, error } = useCourse()
 
 const showSectionModal = ref(false)
 const newSectionTitle = ref('')
 
 const showLectureModal = ref(false)
-const lectureSectionId = ref<number | null>(null)
+const lectureSectionId = ref<string | null>(null)
 const newLectureTitle = ref('')
 const newLectureType = ref('video')
 const newLectureContent = ref('')
 
-const sections = ref<{ id: number, title: string, lectures: any[] }[]>([])
-let nextSectionId = 1
-let nextLectureId = 1
+// Initialize sections from the course prop
+const sections = ref(props.course?.sections || [])
 
 function openSectionModal() {
   showSectionModal.value = true
@@ -25,18 +34,29 @@ function closeSectionModal() {
   newSectionTitle.value = ''
 }
 
-function addSection() {
-  if (newSectionTitle.value.trim()) {
-    sections.value.push({
-      id: nextSectionId++,
-      title: newSectionTitle.value.trim(),
-      lectures: [],
-    })
-    closeSectionModal()
+async function handleAddSection() {
+  if (newSectionTitle.value.trim() && props.course?.id) {
+    try {
+      await addSection(props.course.id, {
+        title: newSectionTitle.value.trim(),
+      })
+      toast({
+        title: "Success",
+        description: "Section added successfully",
+      })
+      closeSectionModal()
+    } catch (e: any) {
+      console.error('Failed to add section:', e)
+      toast({
+        title: "Error",
+        description: e.message || "Failed to add section",
+        variant: "destructive"
+      })
+    }
   }
 }
 
-function openLectureModal(sectionId: number) {
+function openLectureModal(sectionId: string) {
   lectureSectionId.value = sectionId
   newLectureTitle.value = ''
   newLectureType.value = 'video'
@@ -52,22 +72,40 @@ function closeLectureModal() {
   newLectureContent.value = ''
 }
 
-function addLecture() {
+async function handleAddLecture() {
   if (
     newLectureTitle.value.trim() &&
     newLectureContent.value.trim() &&
-    lectureSectionId.value !== null
+    lectureSectionId.value !== null &&
+    props.course?.id
   ) {
-    const section = sections.value.find(s => s.id === lectureSectionId.value)
-    if (section) {
-      section.lectures.push({
-        id: nextLectureId++,
+    try {
+      const lectureData: Omit<Lecture, 'id' | 'createdAt' | 'updatedAt'> = {
         title: newLectureTitle.value.trim(),
-        type: newLectureType.value,
-        content: newLectureContent.value.trim(),
+        isVideo: newLectureType.value === 'video',
+        isHTML: newLectureType.value === 'html',
+        isPDF: newLectureType.value === 'pdf',
+        isQuiz: newLectureType.value === 'quiz',
+        videoUrl: newLectureType.value === 'video' ? newLectureContent.value.trim() : null,
+        html: newLectureType.value === 'html' ? newLectureContent.value.trim() : null,
+        pdfUrl: newLectureType.value === 'pdf' ? newLectureContent.value.trim() : null,
+        quizId: newLectureType.value === 'quiz' ? newLectureContent.value.trim() : null,
+      }
+
+      await addLecture(props.course.id, lectureSectionId.value, lectureData)
+      toast({
+        title: "Success",
+        description: "Lecture added successfully",
+      })
+      closeLectureModal()
+    } catch (e: any) {
+      console.error('Failed to add lecture:', e)
+      toast({
+        title: "Error",
+        description: e.message || "Failed to add lecture",
+        variant: "destructive"
       })
     }
-    closeLectureModal()
   }
 }
 </script>
@@ -79,7 +117,7 @@ function addLecture() {
         <h2 class="text-2xl font-bold text-foreground">Course Content</h2>
         <p class="text-muted-foreground">Organize your course into sections and lectures.</p>
       </div>
-      <Button @click="openSectionModal">
+      <Button variant="default" @click="openSectionModal">
         + Add Section
       </Button>
     </div>
@@ -93,7 +131,7 @@ function addLecture() {
       >
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-xl font-bold text-primary">{{ section.title }}</h3>
-          <Button size="sm" @click="openLectureModal(section.id)">+ Add Lecture</Button>
+          <Button variant="secondary" size="sm" @click="openLectureModal(section.id)">+ Add Lecture</Button>
         </div>
         <ul class="space-y-2 pl-4">
           <li v-if="section.lectures.length === 0" class="text-muted-foreground italic">No lectures yet.</li>
@@ -104,8 +142,12 @@ function addLecture() {
           >
             <span class="inline-block w-2 h-2 rounded-full bg-primary/60 mr-2"></span>
             <span class="font-medium text-foreground">{{ lecture.title }}</span>
-            <span class="text-xs text-muted-foreground">({{ lecture.type }})</span>
-            <span class="text-xs text-muted-foreground truncate max-w-xs">{{ lecture.content }}</span>
+            <span class="text-xs text-muted-foreground">
+              ({{ lecture.isVideo ? 'Video' : lecture.isHTML ? 'HTML' : lecture.isPDF ? 'PDF' : 'Quiz' }})
+            </span>
+            <span class="text-xs text-muted-foreground truncate max-w-xs">
+              {{ lecture.isVideo ? lecture.videoUrl : lecture.isHTML ? 'HTML Content' : lecture.isPDF ? lecture.pdfUrl : lecture.quizId }}
+            </span>
           </li>
         </ul>
       </div>
@@ -136,11 +178,11 @@ function addLecture() {
           type="text"
           placeholder="Section title"
           class="w-full border rounded px-3 py-2 mb-4 focus:outline-none focus:ring"
-          @keyup.enter="addSection"
+          @keyup.enter="handleAddSection"
         />
         <div class="flex justify-end gap-2">
           <Button variant="outline" @click="closeSectionModal">Cancel</Button>
-          <Button @click="addSection" :disabled="!newSectionTitle.trim()">Add</Button>
+          <Button variant="default" @click="handleAddSection" :disabled="!newSectionTitle.trim()">Add</Button>
         </div>
       </div>
     </div>
@@ -185,9 +227,19 @@ function addLecture() {
         </div>
         <div class="flex justify-end gap-2">
           <Button variant="outline" @click="closeLectureModal">Cancel</Button>
-          <Button @click="addLecture" :disabled="!newLectureTitle.trim() || !newLectureContent.trim()">Add</Button>
+          <Button variant="default" @click="handleAddLecture" :disabled="!newLectureTitle.trim() || !newLectureContent.trim()">Add</Button>
         </div>
       </div>
+    </div>
+
+    <!-- Add loading state -->
+    <div v-if="loading" class="flex items-center justify-center">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+
+    <!-- Add error state -->
+    <div v-if="error" class="text-red-500 text-center p-4">
+      {{ error }}
     </div>
   </div>
 </template>
