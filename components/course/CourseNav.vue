@@ -12,34 +12,46 @@ const emit = defineEmits<{
   (e: 'collapse'): void
 }>()
 
-const navLinks = [
-  {
-    title: 'Home',
-    icon: 'lucide:home',
-    variant: 'default',
-  },
-  {
-    title: 'Syllabus',
-    icon: 'lucide:book-open',
-    variant: 'ghost',
-  },
-  {
-    title: 'People',
-    icon: 'lucide:users',
-    variant: 'ghost',
-  },
-  {
-    title: 'Quizzes',
-    icon: 'lucide:help-circle',
-    variant: 'ghost',
-  },
-  {
-    title: 'Edit',
-    icon: 'lucide:settings',
-    variant: 'ghost',
-    to: computed(() => `/edit-course/${props.course?.id}`)
-  },
-]
+const { user } = useUser()
+
+const navLinks = computed(() => {
+  const baseLinks = [
+    {
+      title: 'Home',
+      icon: 'lucide:home',
+      variant: 'default',
+    },
+    {
+      title: 'Syllabus',
+      icon: 'lucide:book-open',
+      variant: 'ghost',
+    },
+  ]
+
+  // Only add these links if user is not a student
+  if (user.value?.role !== 'student') {
+    baseLinks.push(
+      {
+        title: 'People',
+        icon: 'lucide:users',
+        variant: 'ghost',
+      },
+      {
+        title: 'Quizzes',
+        icon: 'lucide:help-circle',
+        variant: 'ghost',
+      },
+      {
+        title: 'Edit',
+        icon: 'lucide:settings',
+        variant: 'ghost',
+        to: computed(() => `/edit-course/${props.course?.id}`)
+      }
+    )
+  }
+
+  return baseLinks
+})
 
 function onCollapse() {
   emit('collapse')
