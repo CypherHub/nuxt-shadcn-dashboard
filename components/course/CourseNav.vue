@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { Course } from '~/models/Course'
 
 const props = defineProps<{
@@ -33,6 +33,12 @@ const navLinks = [
     icon: 'lucide:help-circle',
     variant: 'ghost',
   },
+  {
+    title: 'Edit',
+    icon: 'lucide:settings',
+    variant: 'ghost',
+    to: computed(() => `/edit-course/${props.course?.id}`)
+  },
 ]
 
 function onCollapse() {
@@ -59,15 +65,20 @@ function onExpand() {
     </div>
     <Separator />
     <nav class="flex flex-col gap-1 p-2">
-      <Button
+      <NuxtLink
         v-for="link in navLinks"
         :key="link.title"
-        :variant="link.variant"
-        class="w-full justify-start"
+        :to="link.to"
+        class="w-full"
       >
-        <Icon :name="link.icon" class="mr-2 h-4 w-4" />
-        <span v-if="!isCollapsed">{{ link.title }}</span>
-      </Button>
+        <Button
+          :variant="link.variant"
+          class="w-full justify-start"
+        >
+          <Icon :name="link.icon" class="mr-2 h-4 w-4" />
+          <span v-if="!isCollapsed">{{ link.title }}</span>
+        </Button>
+      </NuxtLink>
     </nav>
   </div>
 </template>
