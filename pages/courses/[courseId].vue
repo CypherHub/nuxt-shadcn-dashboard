@@ -2,9 +2,13 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCourse } from '~/composables/useCourse'
+import { useEnrollment } from '~/composables/useEnrollment'
 import type { Course, Section, Lecture } from '~/models/Course'
-import { Home, BookOpen, Users, HelpCircle } from 'lucide-vue-next'
+import type { Enrollment } from '~/models/Enrollment'
+import { Home, BookOpen, Users, HelpCircle, Loader2 } from 'lucide-vue-next'
 import CourseNav from '~/components/course/CourseNav.vue'
+import { Button } from '~/components/ui/button'
+import { Progress } from '~/components/ui/progress'
 
 const route = useRoute()
 const courseId = route.params.courseId as string
@@ -15,8 +19,13 @@ const sections = ref<Section[]>([])
 const lectures = ref<Lecture[]>([])
 const progress = ref(0)
 const isCollapsed = ref(false)
+const enrollment = ref<Enrollment | null>(null)
 
 const { fetchCourseById } = useCourse()
+const { getAllEnrolledCourses, createEnrollment } = useEnrollment()
+
+// Add loading state for enrollment
+const isEnrolling = ref(false)
 
 const fetchCourseDetails = async () => {
   try {
@@ -38,8 +47,26 @@ function onExpand() {
   isCollapsed.value = false
 }
 
-onMounted(() => {
-  fetchCourseDetails()
+// Add function to handle enrollment
+const handleEnroll = async () => {
+  try {
+    isEnrolling.value = true
+    const newEnrollment = await createEnrollment(courseId)
+    enrollment.value = newEnrollment
+    progress.value = 0 // Reset progress for new enrollment
+  } catch (e) {
+    console.error('Error enrolling in course:', e)
+  } finally {
+    isEnrolling.value = false
+  }
+}
+
+onMounted(async () => {
+  await fetchCourseDetails()
+  let allEnrollments = await getAllEnrolledCourses()
+  console.log('[courses/[courseId].vue] allEnrollments', allEnrollments)
+  enrollment.value = allEnrollments.find((enrollment) => enrollment.courseId === courseId) || null
+  console.log('[courses/[courseId].vue] enrollment', enrollment.value)
 })
 </script>
 
@@ -73,9 +100,19 @@ onMounted(() => {
               <div class="space-y-2">
                 <h1 class="text-2xl font-bold">{{ course.title }}</h1>
                 <p class="text-muted-foreground">{{ course.description }}</p>
-                <div class="flex items-center gap-2">
-                  <Progress :value="progress" class="w-[200px]" />
-                  <span class="text-sm text-muted-foreground">{{ progress }}% Complete</span>
+                <div v-if="enrollment" class="flex items-center gap-2">
+                  <Progress :value="enrollment.overallProgress" class="w-[200px]" />
+                  <span class="text-sm text-muted-foreground">{{ enrollment.overallProgress }}% Complete</span>
+                </div>
+                <div v-else class="flex items-center gap-2">
+                  <Button 
+                    :disabled="isEnrolling" 
+                    @click="handleEnroll"
+                    class="w-[200px]"
+                  >
+                    <Loader2 v-if="isEnrolling" class="mr-2 h-4 w-4 animate-spin" />
+                    {{ isEnrolling ? 'Enrolling...' : 'Enroll in Course' }}
+                  </Button>
                 </div>
               </div>
             </div>
