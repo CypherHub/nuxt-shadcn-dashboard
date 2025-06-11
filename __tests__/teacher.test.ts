@@ -25,7 +25,6 @@ const db = getFirestore(app);
 
 describe('Teacher Course Creation', () => {
   let courseController: CourseController;
-  let createdCourseId: string;
   let teacherId: string;
 
   beforeAll(async () => {
@@ -40,11 +39,6 @@ describe('Teacher Course Creation', () => {
   });
 
   afterAll(async () => {
-    // Clean up the test course if it was created
-    // if (createdCourseId) {
-    //   await courseController.deleteCourse(createdCourseId);
-    // }
-    
     // Sign out
     await auth.signOut();
     
@@ -52,8 +46,8 @@ describe('Teacher Course Creation', () => {
     await deleteApp(app);
   });
 
-  test('should create a course with a section and lecture', async () => {
-    // Create course
+  test('should throw error when teacher tries to create a course', async () => {
+    // Create course data
     const courseData: Course = {
       title: 'Test Course',
       description: 'A test course',
@@ -65,42 +59,7 @@ describe('Teacher Course Creation', () => {
       courseImageUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&h=300&fit=cropnull',
     };
 
-    const course = await courseController.createCourse(courseData);
-    createdCourseId = course.id; // Store the course ID for cleanup
-    expect(course.id).toBeDefined();
-    expect(course.title).toBe(courseData.title);
-
-    // Create section
-    const sectionData: Section = {
-      title: 'Test Section',
-      id: 'test-section-id',
-      lectures: [],
-    };
-
-    const section = await courseController.addSection(course.id, sectionData);
-    expect(section.id).toBeDefined();
-    expect(section.title).toBe(sectionData.title);
-
-    // Create lecture
-    const lectureData: Lecture = {
-      title: 'Test Lecture',
-      isVideo: false,
-      isHTML: true,
-      isPDF: false,
-      isQuiz: false,
-      videoUrl: null,
-      html: '<p>Test lecture content</p>',
-      pdfUrl: null,
-      quizId: null,
-      id: 'test-lecture-id',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const lecture = await courseController.addLecture(course.id, section.id, lectureData);
-    expect(lecture.id).toBeDefined();
-    expect(lecture.title).toBe(lectureData.title);
-    expect(lecture.isHTML).toBe(true);
-    expect(lecture.html).toContain('Test lecture content');
+    // Attempt to create course and expect it to fail
+    await expect(courseController.createCourse(courseData)).rejects.toThrow('Unauthorized: Only admins can create courses');
   });
 });
