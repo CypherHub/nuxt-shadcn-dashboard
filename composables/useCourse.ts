@@ -134,6 +134,32 @@ export const useCourse = () => {
     }
   }
 
+  const createCourse = async (courseData: Omit<Course, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!user.value) {
+      console.log('[useCourse] User not authenticated, aborting createCourse')
+      throw new Error('User must be authenticated to create courses')
+    }
+
+    try {
+      console.log('[useCourse] Creating course...')
+      loading.value = true
+      error.value = null
+      const newCourse = await courseController.createCourse(courseData)
+      
+      // Add the new course to the local state
+      courses.value.push(newCourse)
+      
+      console.log('[useCourse] Course created successfully:', newCourse)
+      return newCourse
+    } catch (e: any) {
+      error.value = e.message
+      console.error('[useCourse] Error creating course:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     courses,
     loading,
@@ -142,6 +168,7 @@ export const useCourse = () => {
     fetchCourseById,
     updateCourse,
     deleteLecture,
-    deleteSection
+    deleteSection,
+    createCourse
   }
 } 

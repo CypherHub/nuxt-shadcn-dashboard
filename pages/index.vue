@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { Book, GraduationCap } from 'lucide-vue-next'
+import { Book, GraduationCap, Plus } from 'lucide-vue-next'
 import type { Course } from '~/models/Course'
+import AddCourseModal from '~/components/home/AddCourseModal.vue'
 
 const { courses, loading: coursesLoading, error: coursesError, fetchCourses } = useCourse()
 const { enrollments, loading: enrollmentsLoading, error: enrollmentsError, getAllEnrolledCourses } = useEnrollment()
 const showAllCourses = ref(true)
 const router = useRouter()
 const { user } = useAuth() // or useUser(), depending on your actual composable
+const showAddCourseModal = ref(false)
 
 watch(
   () => user.value,
@@ -56,9 +58,20 @@ const error = computed(() => coursesError.value || enrollmentsError.value)
 <template>
   <div class="w-full flex flex-col gap-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h2 class="text-2xl font-bold tracking-tight">
-        {{ showAllCourses ? 'All Courses' : 'My Enrolled Courses' }}
-      </h2>
+      <div class="flex items-center gap-2">
+        <h2 class="text-2xl font-bold tracking-tight">
+          {{ showAllCourses ? 'All Courses' : 'My Enrolled Courses' }}
+        </h2>
+        <Button
+          v-if="showAllCourses"
+          variant="outline"
+          size="sm"
+          @click="showAddCourseModal = true"
+        >
+          <Plus class="mr-2 h-4 w-4" />
+          Add Course
+        </Button>
+      </div>
       <div class="flex items-center space-x-2">
         <Button
           variant="outline"
@@ -73,7 +86,7 @@ const error = computed(() => coursesError.value || enrollmentsError.value)
       </div>
     </div>
     <main class="flex flex-1 flex-col gap-4 md:gap-8">
-      <div v-if="loading" class="text-center py-8">
+      <div v-if="isLoading" class="text-center py-8">
         <p class="text-muted-foreground">Loading courses...</p>
       </div>
       <div v-else-if="error" class="text-center py-8">
@@ -109,5 +122,9 @@ const error = computed(() => coursesError.value || enrollmentsError.value)
         </Card>
       </div>
     </main>
+    <AddCourseModal
+      v-model:open="showAddCourseModal"
+      @course-created="fetchCourses"
+    />
   </div>
 </template>

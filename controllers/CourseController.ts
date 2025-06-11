@@ -21,10 +21,11 @@ export class CourseController {
         ...courseData,
         id: courseRef.id,
         createdAt: new Date(),
-        teacherIds: courseData.teacherIds,
+        teacherIds: [],
         updatedAt: new Date(),
       }
 
+      console.log('[CourseController] Course: ', course)
       await setDoc(courseRef, course)
       console.log('[CourseController] Course created with ID:', course.id)
       return course
