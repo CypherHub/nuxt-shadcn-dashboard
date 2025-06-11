@@ -1,5 +1,7 @@
 import { CourseController } from '~/controllers/CourseController'
 import type { Course } from '~/models/Course'
+import type { Section } from '~/models/Section'
+import type { Lecture } from '~/models/Lecture'
 
 export const useCourse = () => {
   const { $db } = useNuxtApp()
@@ -160,6 +162,67 @@ export const useCourse = () => {
     }
   }
 
+  const addSection = async (courseId: string, sectionData: Omit<Section, 'id' | 'lectures'>) => {
+    if (!user.value) {
+      console.log('[useCourse] User not authenticated, aborting addSection')
+      throw new Error('User must be authenticated to add sections')
+    }
+
+    try {
+      console.log('[useCourse] Adding section to course:', courseId)
+      loading.value = true
+      error.value = null
+      const newSection = await courseController.addSection(courseId, sectionData)
+      
+      // Update the local state by adding the new section
+      const courseIndex = courses.value.findIndex(c => c.id === courseId)
+      if (courseIndex !== -1) {
+        courses.value[courseIndex].sections.push(newSection)
+      }
+      
+      console.log('[useCourse] Section added successfully:', newSection)
+      return newSection
+    } catch (e: any) {
+      error.value = e.message
+      console.error('[useCourse] Error adding section:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const addLecture = async (courseId: string, sectionId: string, lectureData: Omit<Lecture, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!user.value) {
+      console.log('[useCourse] User not authenticated, aborting addLecture')
+      throw new Error('User must be authenticated to add lectures')
+    }
+
+    try {
+      console.log('[useCourse] Adding lecture to section:', sectionId)
+      loading.value = true
+      error.value = null
+      const newLecture = await courseController.addLecture(courseId, sectionId, lectureData)
+      
+      // Update the local state by adding the new lecture
+      const courseIndex = courses.value.findIndex(c => c.id === courseId)
+      if (courseIndex !== -1) {
+        const sectionIndex = courses.value[courseIndex].sections.findIndex(s => s.id === sectionId)
+        if (sectionIndex !== -1) {
+          courses.value[courseIndex].sections[sectionIndex].lectures.push(newLecture)
+        }
+      }
+      
+      console.log('[useCourse] Lecture added successfully:', newLecture)
+      return newLecture
+    } catch (e: any) {
+      error.value = e.message
+      console.error('[useCourse] Error adding lecture:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     courses,
     loading,
@@ -169,6 +232,8 @@ export const useCourse = () => {
     updateCourse,
     deleteLecture,
     deleteSection,
-    createCourse
+    createCourse,
+    addSection,
+    addLecture
   }
 } 
