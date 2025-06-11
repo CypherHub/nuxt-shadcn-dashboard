@@ -44,11 +44,104 @@ export const useCourse = () => {
     }
   }
 
+  const updateCourse = async (id: string, courseData: Partial<Omit<Course, 'id' | 'createdAt' | 'updatedAt'>>) => {
+    if (!user.value) {
+      console.log('[useCourse] User not authenticated, aborting updateCourse')
+      throw new Error('User must be authenticated to update courses')
+    }
+
+    try {
+      console.log('[useCourse] Updating course:', id)
+      loading.value = true
+      error.value = null
+      const updatedCourse = await courseController.updateCourse(id, courseData)
+      
+      // Update the course in the local state if it exists
+      const index = courses.value.findIndex(c => c.id === id)
+      if (index !== -1) {
+        courses.value[index] = updatedCourse
+      }
+      
+      console.log('[useCourse] Course updated successfully:', updatedCourse)
+      return updatedCourse
+    } catch (e: any) {
+      error.value = e.message
+      console.error('[useCourse] Error updating course:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const deleteLecture = async (courseId: string, sectionId: string, lectureId: string) => {
+    if (!user.value) {
+      console.log('[useCourse] User not authenticated, aborting deleteLecture')
+      throw new Error('User must be authenticated to delete lectures')
+    }
+
+    try {
+      console.log('[useCourse] Deleting lecture:', lectureId)
+      loading.value = true
+      error.value = null
+      await courseController.deleteLecture(courseId, sectionId, lectureId)
+      
+      // Update the local state by removing the lecture
+      const courseIndex = courses.value.findIndex(c => c.id === courseId)
+      if (courseIndex !== -1) {
+        const sectionIndex = courses.value[courseIndex].sections.findIndex(s => s.id === sectionId)
+        if (sectionIndex !== -1) {
+          courses.value[courseIndex].sections[sectionIndex].lectures = 
+            courses.value[courseIndex].sections[sectionIndex].lectures.filter(l => l.id !== lectureId)
+        }
+      }
+      
+      console.log('[useCourse] Lecture deleted successfully')
+    } catch (e: any) {
+      error.value = e.message
+      console.error('[useCourse] Error deleting lecture:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const deleteSection = async (courseId: string, sectionId: string) => {
+    if (!user.value) {
+      console.log('[useCourse] User not authenticated, aborting deleteSection')
+      throw new Error('User must be authenticated to delete sections')
+    }
+
+    try {
+      console.log('[useCourse] Deleting section:', sectionId)
+      loading.value = true
+      error.value = null
+      await courseController.deleteSection(courseId, sectionId)
+      
+      // Update the local state by removing the section
+      const courseIndex = courses.value.findIndex(c => c.id === courseId)
+      if (courseIndex !== -1) {
+        courses.value[courseIndex].sections = 
+          courses.value[courseIndex].sections.filter(s => s.id !== sectionId)
+      }
+      
+      console.log('[useCourse] Section deleted successfully')
+    } catch (e: any) {
+      error.value = e.message
+      console.error('[useCourse] Error deleting section:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     courses,
     loading,
     error,
     fetchCourses,
-    fetchCourseById
+    fetchCourseById,
+    updateCourse,
+    deleteLecture,
+    deleteSection
   }
 } 

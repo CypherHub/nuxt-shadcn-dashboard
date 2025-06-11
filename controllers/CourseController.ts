@@ -1,8 +1,17 @@
-import { doc, setDoc, collection, addDoc, updateDoc, getDocs, getDoc } from 'firebase/firestore'
+import { doc, setDoc, collection, addDoc, updateDoc, getDocs, getDoc, deleteDoc, query, where } from 'firebase/firestore'
 import type { Course, Section, Lecture } from '../models/Course'
 
 export class CourseController {
   constructor(private db: any) {}
+
+  private async hasEnrollments(courseId: string): Promise<boolean> {
+    const enrollmentsQuery = query(
+      collection(this.db, 'enrollments'),
+      where('courseId', '==', courseId)
+    )
+    const enrollmentsSnapshot = await getDocs(enrollmentsQuery)
+    return !enrollmentsSnapshot.empty
+  }
 
   async createCourse(courseData: Omit<Course, 'id' | 'createdAt' | 'updatedAt'>): Promise<Course> {
     console.log('[CourseController] createCourse called with:', courseData)
@@ -142,6 +151,93 @@ export class CourseController {
       } as Course
     } catch (error) {
       console.error('Error fetching course details:', error)
+      throw error
+    }
+  }
+
+  async updateCourse(id: string, courseData: Partial<Omit<Course, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Course> {
+    console.log('[CourseController] updateCourse called for courseId:', id, 'with:', courseData)
+    try {
+      const hasEnrollments = await this.hasEnrollments(id)
+      if (hasEnrollments) {
+        throw new Error('Cannot modify course: Course has active enrollments')
+      }
+
+      const courseRef = doc(this.db, 'courses', id)
+      const courseDoc = await getDoc(courseRef)
+      
+      if (!courseDoc.exists()) {
+        console.error('[CourseController] Course not found for id:', id)
+        throw new Error('Course not found')
+      }
+
+      const updateData = {
+        ...courseData,
+        updatedAt: new Date(),
+      }
+
+      await updateDoc(courseRef, updateData)
+      console.log('[CourseController] Course updated successfully for id:', id)
+      
+      return this.getCourseDetails(id)
+    } catch (error) {
+      console.error('Error updating course:', error)
+      throw error
+    }
+  }
+
+  async deleteLecture(courseId: string, sectionId: string, lectureId: string): Promise<void> {
+    console.log('[CourseController] deleteLecture called for courseId:', courseId, 'sectionId:', sectionId, 'lectureId:', lectureId)
+    try {
+      const hasEnrollments = await this.hasEnrollments(courseId)
+      if (hasEnrollments) {
+        throw new Error('Cannot delete lecture: Course has active enrollments')
+      }
+
+      const lectureRef = doc(this.db, `courses/${courseId}/sections/${sectionId}/lectures`, lectureId)
+      const lectureDoc = await getDoc(lectureRef)
+      
+      if (!lectureDoc.exists()) {
+        console.error('[CourseController] Lecture not found for id:', lectureId)
+        throw new Error('Lecture not found')
+      }
+
+      await deleteDoc(lectureRef)
+      console.log('[CourseController] Lecture deleted successfully for id:', lectureId)
+    } catch (error) {
+      console.error('Error deleting lecture:', error)
+      throw error
+    }
+  }
+
+  async deleteSection(courseId: string, sectionId: string): Promise<void> {
+    console.log('[CourseController] deleteSection called for courseId:', courseId, 'sectionId:', sectionId)
+    try {
+      const hasEnrollments = await this.hasEnrollments(courseId)
+      if (hasEnrollments) {
+        throw new Error('Cannot delete section: Course has active enrollments')
+      }
+
+      const sectionRef = doc(this.db, `courses/${courseId}/sections`, sectionId)
+      const sectionDoc = await getDoc(sectionRef)
+      
+      if (!sectionDoc.exists()) {
+        console.error('[CourseController] Section not found for id:', sectionId)
+        throw new Error('Section not found')
+      }
+
+      // First delete all lectures in the section
+      const lecturesRef = collection(this.db, `courses/${courseId}/sections/${sectionId}/lectures`)
+      const lecturesSnapshot = await getDocs(lecturesRef)
+      
+      const deletePromises = lecturesSnapshot.docs.map(doc => deleteDoc(doc.ref))
+      await Promise.all(deletePromises)
+
+      // Then delete the section itself
+      await deleteDoc(sectionRef)
+      console.log('[CourseController] Section and its lectures deleted successfully for id:', sectionId)
+    } catch (error) {
+      console.error('Error deleting section:', error)
       throw error
     }
   }
