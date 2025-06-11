@@ -2,9 +2,9 @@
 <script setup lang="ts">
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import CourseSettingsTab from '@/components/add-course/CourseSettingsTab.vue'
-import CourseContentTab from '@/components/add-course/CourseContentTab.vue'
-import CoursePreviewTab from '@/components/add-course/CoursePreviewTab.vue'
+import CourseSettingsTab from '@/components/edit-course/CourseSettingsTab.vue'
+import CourseContentTab from '@/components/edit-course/CourseContentTab.vue'
+import CoursePreviewTab from '@/components/edit-course/CoursePreviewTab.vue'
 import type { Course } from '~/models/Course'
 
 const route = useRoute()
