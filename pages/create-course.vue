@@ -1,4 +1,44 @@
 <template>
+  <div class="min-h-screen bg-[#E5F5FA]">
+    <TopBar />
+    <CreateCourseTabs :tab="activeTab" @update:tab="activeTab = $event" />
+    <div class="px-6 py-4">
+      <CourseSettings v-if="activeTab === 'settings'" />
+      <CourseContent v-else-if="activeTab === 'content'" />
+      <CoursePreview v-else-if="activeTab === 'preview'" />
+    </div>
+    <Footer />
+  </div>
+</template>
+
+<script>
+import TopBar from './createCourse/components/TopBar.vue';
+import CreateCourseTabs from './createCourse/components/CreateCourseTabs.vue';
+import CourseSettings from './createCourse/components/CourseSettings.vue';
+import CourseContent from './createCourse/components/CourseContent.vue';
+import CoursePreview from './createCourse/components/CoursePreview.vue';
+import Footer from './createCourse/components/Footer.vue';
+
+export default {
+  components: {
+    TopBar,
+    CreateCourseTabs,
+    CourseSettings,
+    CourseContent,
+    CoursePreview,
+    Footer,
+  },
+  data() {
+    return {
+      activeTab: 'settings',
+    };
+  },
+};
+</script>
+
+
+
+<!-- <template>
   <div class="min-h-screen bg-blue-50">
     <div class="flex items-center justify-between p-4 shadow bg-white">
       <div class="flex items-center gap-2">
@@ -119,4 +159,4 @@ export default {
 button {
   transition: background-color 0.3s;
 }
-</style>
+</style> -->
