@@ -37,9 +37,11 @@ function closeSectionModal() {
 async function handleAddSection() {
   if (newSectionTitle.value.trim() && props.course?.id) {
     try {
-      await addSection(props.course.id, {
+      const newSection = await addSection(props.course.id, {
         title: newSectionTitle.value.trim(),
       })
+      // Update local sections state
+      sections.value.push(newSection)
       toast({
         title: "Success",
         description: "Section added successfully",
@@ -92,7 +94,12 @@ async function handleAddLecture() {
         quizId: newLectureType.value === 'quiz' ? newLectureContent.value.trim() : null,
       }
 
-      await addLecture(props.course.id, lectureSectionId.value, lectureData)
+      const newLecture = await addLecture(props.course.id, lectureSectionId.value, lectureData)
+      // Update local sections state
+      const sectionIndex = sections.value.findIndex(s => s.id === lectureSectionId.value)
+      if (sectionIndex !== -1) {
+        sections.value[sectionIndex].lectures.push(newLecture)
+      }
       toast({
         title: "Success",
         description: "Lecture added successfully",

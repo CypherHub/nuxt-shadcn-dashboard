@@ -17,6 +17,8 @@ export interface Section {
   id: string;
   title: string;
   lectures: Lecture[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Course {

@@ -43,6 +43,8 @@ export class CourseController {
         ...sectionData,
         id: sectionRef.id,
         lectures: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
 
       await setDoc(sectionRef, section)
@@ -90,8 +92,8 @@ export class CourseController {
         // Convert Firestore timestamps to Date objects
         courses.push({
           ...courseData,
-          createdAt: courseData.createdAt?.toDate(),
-          updatedAt: courseData.updatedAt?.toDate(),
+          createdAt: courseData.createdAt.toDate(),
+          updatedAt: courseData.updatedAt.toDate(),
         } as Course)
       })
 
