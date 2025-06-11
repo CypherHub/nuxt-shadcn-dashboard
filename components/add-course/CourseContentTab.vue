@@ -2,21 +2,26 @@
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 
-// Modal state
-const showModal = ref(false)
+const showSectionModal = ref(false)
 const newSectionTitle = ref('')
 
-// Sections state
-const sections = ref<{ id: number, title: string }[]>([])
-let nextSectionId = 1
+const showLectureModal = ref(false)
+const lectureSectionId = ref<number | null>(null)
+const newLectureTitle = ref('')
+const newLectureType = ref('video')
+const newLectureContent = ref('')
 
-function openModal() {
-  showModal.value = true
+const sections = ref<{ id: number, title: string, lectures: any[] }[]>([])
+let nextSectionId = 1
+let nextLectureId = 1
+
+function openSectionModal() {
+  showSectionModal.value = true
   newSectionTitle.value = ''
 }
 
-function closeModal() {
-  showModal.value = false
+function closeSectionModal() {
+  showSectionModal.value = false
   newSectionTitle.value = ''
 }
 
@@ -25,8 +30,44 @@ function addSection() {
     sections.value.push({
       id: nextSectionId++,
       title: newSectionTitle.value.trim(),
+      lectures: [],
     })
-    closeModal()
+    closeSectionModal()
+  }
+}
+
+function openLectureModal(sectionId: number) {
+  lectureSectionId.value = sectionId
+  newLectureTitle.value = ''
+  newLectureType.value = 'video'
+  newLectureContent.value = ''
+  showLectureModal.value = true
+}
+
+function closeLectureModal() {
+  showLectureModal.value = false
+  lectureSectionId.value = null
+  newLectureTitle.value = ''
+  newLectureType.value = 'video'
+  newLectureContent.value = ''
+}
+
+function addLecture() {
+  if (
+    newLectureTitle.value.trim() &&
+    newLectureContent.value.trim() &&
+    lectureSectionId.value !== null
+  ) {
+    const section = sections.value.find(s => s.id === lectureSectionId.value)
+    if (section) {
+      section.lectures.push({
+        id: nextLectureId++,
+        title: newLectureTitle.value.trim(),
+        type: newLectureType.value,
+        content: newLectureContent.value.trim(),
+      })
+    }
+    closeLectureModal()
   }
 }
 </script>
@@ -38,7 +79,7 @@ function addSection() {
         <h2 class="text-2xl font-bold text-foreground">Course Content</h2>
         <p class="text-muted-foreground">Organize your course into sections and lectures.</p>
       </div>
-      <Button @click="openModal">
+      <Button @click="openSectionModal">
         + Add Section
       </Button>
     </div>
@@ -50,9 +91,17 @@ function addSection() {
         :key="section.id"
         class="border rounded-lg p-4 bg-background"
       >
-        <h3 class="font-medium mb-2">{{ section.title }}</h3>
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-medium">{{ section.title }}</h3>
+          <Button size="sm" @click="openLectureModal(section.id)">+ Add Lecture</Button>
+        </div>
         <ul class="space-y-2">
-          <li class="text-muted-foreground italic">No lectures yet.</li>
+          <li v-if="section.lectures.length === 0" class="text-muted-foreground italic">No lectures yet.</li>
+          <li v-for="lecture in section.lectures" :key="lecture.id" class="flex items-center gap-2">
+            <span class="font-semibold">{{ lecture.title }}</span>
+            <span class="text-xs text-muted-foreground">({{ lecture.type }})</span>
+            <span class="text-xs text-muted-foreground truncate max-w-xs">{{ lecture.content }}</span>
+          </li>
         </ul>
       </div>
     </div>
@@ -73,8 +122,8 @@ function addSection() {
       </div>
     </div>
 
-    <!-- Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <!-- Section Modal -->
+    <div v-if="showSectionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div class="bg-background rounded-lg p-6 w-full max-w-sm shadow-lg">
         <h3 class="text-lg font-semibold mb-4">Add Section</h3>
         <input
@@ -85,8 +134,53 @@ function addSection() {
           @keyup.enter="addSection"
         />
         <div class="flex justify-end gap-2">
-          <Button variant="outline" @click="closeModal">Cancel</Button>
+          <Button variant="outline" @click="closeSectionModal">Cancel</Button>
           <Button @click="addSection" :disabled="!newSectionTitle.trim()">Add</Button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lecture Modal -->
+    <div v-if="showLectureModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div class="bg-background rounded-lg p-6 w-full max-w-sm shadow-lg">
+        <h3 class="text-lg font-semibold mb-4">Add Lecture</h3>
+        <input
+          v-model="newLectureTitle"
+          type="text"
+          placeholder="Lecture title"
+          class="w-full border rounded px-3 py-2 mb-3 focus:outline-none focus:ring"
+        />
+        <div class="mb-3">
+          <label class="block text-sm font-medium mb-1">Type</label>
+          <select v-model="newLectureType" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring">
+            <option value="video">Video</option>
+            <option value="html">HTML</option>
+            <option value="pdf">PDF</option>
+            <option value="quiz">Quiz</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">
+            {{ newLectureType === 'video' ? 'Video URL' : newLectureType === 'pdf' ? 'PDF URL' : newLectureType === 'html' ? 'HTML Content' : 'Quiz ID' }}
+          </label>
+          <input
+            v-if="newLectureType !== 'html'"
+            v-model="newLectureContent"
+            type="text"
+            :placeholder="newLectureType === 'video' ? 'https://...' : newLectureType === 'pdf' ? 'https://...' : 'Quiz ID'"
+            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring"
+          />
+          <textarea
+            v-else
+            v-model="newLectureContent"
+            placeholder="Enter HTML content"
+            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring"
+            rows="3"
+          />
+        </div>
+        <div class="flex justify-end gap-2">
+          <Button variant="outline" @click="closeLectureModal">Cancel</Button>
+          <Button @click="addLecture" :disabled="!newLectureTitle.trim() || !newLectureContent.trim()">Add</Button>
         </div>
       </div>
     </div>
