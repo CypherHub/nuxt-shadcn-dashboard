@@ -11,7 +11,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   // List of public routes that don't require authentication
-  const publicRoutes = ['/login', '/signup', '/forgot-password', '/register', '/create-course']
+  const publicRoutes = ['/login', '/signup', '/forgot-password', '/register']
   
   // If auth is not initialized yet, wait for it
   if (!isInitialized.value) {
